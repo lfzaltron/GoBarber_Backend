@@ -35,6 +35,8 @@ describe('AuthenticateteUser', () => {
             password: '123456',
         });
 
+        delete user.password;
+
         expect(response).toHaveProperty('token');
         expect(response.user).toEqual(user);
     });
