@@ -25,12 +25,7 @@ describe('SendForgotPasswordEmail', () => {
     });
 
     it('Shoud be able to send recover password email', async () => {
-        const fakeHashProvider = new FakeHashProvider();
-        const createUserService = new CreateUserService(
-            fakeUserRepository,
-            fakeHashProvider,
-        );
-        await createUserService.execute({
+        await fakeUserRepository.create({
             name: 'John Doe',
             email: 'johndoe@example.com',
             password: '123456',
@@ -58,12 +53,7 @@ describe('SendForgotPasswordEmail', () => {
     });
 
     it('Should generate a forgot password token', async () => {
-        const fakeHashProvider = new FakeHashProvider();
-        const createUserService = new CreateUserService(
-            fakeUserRepository,
-            fakeHashProvider,
-        );
-        const user = await createUserService.execute({
+        const user = await fakeUserRepository.create({
             name: 'John Doe',
             email: 'johndoe@example.com',
             password: '123456',

@@ -2,6 +2,7 @@ import { startOfHour, isBefore, getHours, format } from 'date-fns';
 import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import INotificationsRepository from '@modules/notifications/repositories/INotificationsRepository';
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
 import Appointment from '../infra/typeorm/entities/Appointment';
 import IAppointmentsRepository from '../repositories/IAppointmentsRepository';
 
@@ -18,6 +19,8 @@ class CreateAppointmentService {
         private appointmentsRepository: IAppointmentsRepository,
         @inject('NotificationsRepository')
         private notificationsRepository: INotificationsRepository,
+        @inject('CacheProvider')
+        private cacheProvider: ICacheProvider,
     ) {}
 
     public async execute({
@@ -26,8 +29,6 @@ class CreateAppointmentService {
         date,
     }: IRequest): Promise<Appointment> {
         const appointmentDate = startOfHour(date);
-
-        // TODO: Change all this rules for availabilityServide
 
         if (isBefore(appointmentDate, new Date(Date.now()))) {
             throw new AppError('You can not make an appointment in the past');
@@ -57,6 +58,22 @@ class CreateAppointmentService {
             date: appointmentDate,
         });
 
+        await this.cacheProvider.invalidate(
+            `provider-appointments:${provider_id}:${format(
+                appointmentDate,
+                'yyyy-M-d',
+            )}`,
+        );
+
+        await this.createNotification(appointmentDate, provider_id);
+
+        return appointment;
+    }
+
+    private async createNotification(
+        appointmentDate: Date,
+        provider_id: string,
+    ): Promise<void> {
         const formattedDate = format(
             appointmentDate,
             "dd/MM/yyyy 'às' HH:mm'h'",
@@ -66,8 +83,6 @@ class CreateAppointmentService {
             recipient_id: provider_id,
             content: `Novo agendamento para o dia ${formattedDate}`,
         });
-
-        return appointment;
     }
 }
 
