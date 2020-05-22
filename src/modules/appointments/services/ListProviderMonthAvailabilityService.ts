@@ -1,5 +1,5 @@
 import { injectable, inject } from 'tsyringe';
-import { getDaysInMonth, isSameDay } from 'date-fns';
+import { getDaysInMonth, isSameDay, isAfter } from 'date-fns';
 import IAppointmentsRepository from '../repositories/IAppointmentsRepository';
 
 interface IRequest {
@@ -52,9 +52,13 @@ export default class ListProviderMonthAvailabilityService {
                 0,
             );
 
+            const thisDay = new Date(year, month - 1, day, 23, 59);
+
             availability.push({
                 day,
-                available: qtdAppointmentsInDay < MAX_APPOINTMENTS_IN_DAY,
+                available:
+                    qtdAppointmentsInDay < MAX_APPOINTMENTS_IN_DAY &&
+                    isAfter(thisDay, Date.now()),
             });
         }
 
