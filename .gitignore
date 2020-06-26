@@ -3,6 +3,7 @@ node_modules/
 .idea/
 .vscode/
 build/
+dist/
 temp/
 coverage
 tmp/*
